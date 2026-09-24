@@ -13,23 +13,25 @@ WhatsApp. **No personal data lives in this repository** — all values are passe
 - Sends the screenshot over WhatsApp (via the `mudslide` CLI) with a custom caption and retry.
 - Saves an error snapshot if anything fails.
 
-## Installation
+## Installation & Quick Start (v2)
 
-Dependencies are consolidated in the single repo-level `requirements.txt` (root of
-`Github Projects`):
+### Option 1: Zero-Setup with `uv` (Recommended)
+This tool supports PEP 723 inline metadata. You can run it instantly without creating a virtual environment or installing packages manually:
 
 ```bash
-cd <repo-root>                 # Github Projects/
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-playwright install chromium
-
-# only if you want WhatsApp notifications
-npx -y mudslide@latest install
+uv run fines_checker.py \
+    --number 123 \
+    --letters ا ب ج \
+    --national-id 12345678901234 \
+    --recipient 201000000000
 ```
 
-## Usage
+### Option 2: Traditional `pip` / `venv`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+playwright install chromium
 
 ```bash
 python fines_checker.py \

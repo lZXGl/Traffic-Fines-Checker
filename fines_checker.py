@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Automated traffic-fines inquiry tool.
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "playwright",
+# ]
+# ///
+"""Automated traffic-fines inquiry tool (v2).
 
 Drives the Egyptian traffic portal (ppo.gov.eg) with Playwright, fills in the
 vehicle plate and national ID, captures a screenshot of the violations summary,
