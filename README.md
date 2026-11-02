@@ -13,7 +13,11 @@ WhatsApp. **No personal data lives in this repository** — all values are passe
 - Sends the screenshot over WhatsApp (via the `mudslide` CLI) with a custom caption and retry.
 - Saves an error snapshot if anything fails.
 
-## Installation & Quick Start (v2)
+## Installation & Quick Start (v2.1)
+
+### What's New in v2.1
+- **Headless Stability**: Automatically resolves recent Chromium builds with `--headless=new` and `--disable-gpu` to eliminate headless Linux screenshot rendering timeouts.
+- **Fail-Safe Screenshots**: Added bounded screenshot timeouts and robust error state handling.
 
 ### Option 1: Zero-Setup with `uv` (Recommended)
 This tool supports PEP 723 inline metadata. You can run it instantly without creating a virtual environment or installing packages manually:

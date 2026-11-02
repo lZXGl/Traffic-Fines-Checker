@@ -5,7 +5,7 @@
 #     "playwright",
 # ]
 # ///
-"""Automated traffic-fines inquiry tool (v2).
+"""Automated traffic-fines inquiry tool (v2.1).
 
 Drives the Egyptian traffic portal (ppo.gov.eg) with Playwright, fills in the
 vehicle plate and national ID, captures a screenshot of the violations summary,
@@ -25,12 +25,22 @@ import argparse
 import asyncio
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from playwright.async_api import async_playwright
 
 DEFAULT_SAVE_DIR = "screenshots"
 PORTAL_URL = "https://ppo.gov.eg/ppo/r/ppoportal/ppoportal/traffic"
+
+
+def get_chromium_executable() -> str | None:
+    """Locate the latest installed Chromium binary to bypass headless screenshot bugs."""
+    cache_dir = Path.home() / ".cache" / "ms-playwright"
+    chrome_bins = sorted(cache_dir.glob("chromium-*/chrome-linux64/chrome"))
+    if chrome_bins:
+        return str(chrome_bins[-1])
+    return None
 
 
 def parse_args():
@@ -52,7 +62,22 @@ async def run_inquiry(args):
     save_dir.mkdir(parents=True, exist_ok=True)
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=not args.headful)
+        exec_path = get_chromium_executable()
+        launch_kwargs = {
+            "headless": not args.headful,
+            "args": [
+                "--headless=new" if not args.headful else "",
+                "--no-sandbox",
+                "--disable-gpu",
+                "--disable-features=Translate",
+                "--disable-translate",
+            ],
+        }
+        launch_kwargs["args"] = [a for a in launch_kwargs["args"] if a]
+        if exec_path and not args.headful:
+            launch_kwargs["executable_path"] = exec_path
+
+        browser = await p.chromium.launch(**launch_kwargs)
         page = await (await browser.new_context()).new_page()
 
         print("1. Navigating to the traffic portal...")
@@ -97,7 +122,7 @@ async def run_inquiry(args):
 
             print("6. Taking screenshot of summary...")
             screenshot_path = os.path.join(str(save_dir), f"fines_{args.number}.png")
-            await page.screenshot(path=screenshot_path, full_page=False)
+            await page.screenshot(path=screenshot_path, full_page=False, timeout=15000)
             print(f"Saved to {screenshot_path}")
 
             if args.recipient:
@@ -122,7 +147,11 @@ async def run_inquiry(args):
         except Exception as exc:
             print(f"An error occurred: {exc}")
             error_path = os.path.join(str(save_dir), f"fines_{args.number}_error.png")
-            await page.screenshot(path=error_path, full_page=False)
+            try:
+                await page.screenshot(path=error_path, full_page=False, timeout=10000)
+            except Exception:
+                pass
+            sys.exit(1)
 
         finally:
             await browser.close()
